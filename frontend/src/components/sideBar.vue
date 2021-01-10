@@ -3,7 +3,6 @@
     <ul id="slide-out" class="side-nav fixed center-align">
       <li><div class="blue darken-2 white-text" style="border-radius: 20px; box-shadow: 2px 2px 2px 2px #468199">
         <i>Logged as</i><br>
-        <b>{{this.$root.$data.fb.auth().currentUser.email}}</b>
       </div></li>
       <li><div class="divider"></div></li>
       <li><button type="button" @click="this.$parent.changeView('dashBoard')" class="btn blue">DashBoard</button></li>
@@ -12,15 +11,31 @@
       <li><div class="divider"></div></li>
       <li><button type="button" @click="this.$parent.changeView('profileSettings')" class="btn blue">Profile Settings</button></li>
       <li><div class="divider"></div></li>
-      <li><button type="button" @click=this.$parent.logout class="btn blue">Logout and exit app</button></li>
+      <li><button type="button" @click="buttonClick('logout')" class="btn blue">Logout and exit app</button></li>
       <li><div class="divider"></div></li>
     </ul>
   </div>
 </template>
 
 <script>
+import M from 'materialize-css';
+
 export default {
-name: 'sideBar'
+  name: 'sideBar',
+  methods: {
+    async buttonClick(button) {
+      if (button === 'logout') {
+        await this.$root.logoutUser().then((response) => {
+          if (response[0] === true) {
+            M.toast({ html: 'You have been logged out', classes: 'rounded green', displayLength: 2000 });
+            this.$root.session_token = null;
+          } else {
+            M.toast({ html: response[1], classes: 'rounded orange', displayLength: 2000 });
+          }
+        });
+      }
+    },
+  }
 }
 </script>
 

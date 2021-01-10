@@ -1,3 +1,4 @@
-import datetime
+import database_queries.loginQueries
+import secrets
 
-print(datetime.datetime.today().strftime('%Y-%m-%d'))
+print(len(secrets.token_hex(10)))

@@ -1,30 +1,13 @@
-<!--TODO:
-1. Przekierowanie z pomyślnej rejestracji
-2. Przekierowanie z pomyślnego logowania -->
-
-
 <template>
-  <LoginView v-if="logged === false" />
-  <AppView v-if="logged === true" />
+  <AuthView v-if="session_token === null" />
+  <AppView v-if="session_token !== null" />
 </template>
 
 <script>
-import LoginView from "@/components/LoginView.vue";
+import AuthView from "@/components/AuthView.vue";
 import AppView from "@/components/AppView";
-import firebase from 'firebase';
+import axios from "axios";
 
-// const bu = 'https://data-room-293312.ew.r.appspot.com';
-const bu_local =  'http://127.0.0.1:5000';
-const firebaseConfig = {
-  apiKey: "AIzaSyDZt4vzBei774pUJLNvwI3VQJjsUOvkY-o",
-  authDomain: "data-room-293312.firebaseapp.com",
-  databaseURL: "https://data-room-293312.firebaseio.com",
-  projectId: "data-room-293312",
-  storageBucket: "data-room-293312.appspot.com",
-  messagingSenderId: "85427468926",
-  appId: "1:85427468926:web:e2ef214971d39f34ac362f"
-};
-firebase.initializeApp(firebaseConfig)
 
 export default {
   name: 'App',
@@ -33,28 +16,70 @@ export default {
   },
   components: {
     AppView,
-    LoginView,
+    AuthView,
   },
   methods: {
-    async isLoggedIn() {
-      if (await firebase.auth().currentUser != null) {
-        this.logged = true;
-      } else {
-        this.logged = false;
-      }
+    async registerUser() {
+      let result = [false, ''];
+      let email = document.getElementById('registerEmail').value;
+      let password = document.getElementById('registerPassword').value;
+      await axios.post(this.backend_url.concat('/client/create'), {
+        email: email,
+        password: password
+      }).then((response) => {
+        if (response.status === 200)
+          result[0] = true;
+        result[1] = response.data;
+      }).catch((error) => {
+        result[1] = error.message;
+      });
+      return result;
     },
+    async sendPasswordResetEmail() {
+      let result = [false, ''];
+      let email = document.getElementById('passwordEmail').value;
+      await axios.get(this.backend_url.concat('/mail/', email, '/send')).then((response) => {
+        if (response.status === 200)
+          result[0] = true;
+        result[1] = response.data;
+      }).catch((error) => {
+        result[1] = error.message;
+      });
+      return result;
+    },
+    async loginUser() {
+      let result = [false, ''];
+      let email = document.getElementById('loginEmail').value;
+      let password = document.getElementById('loginPassword').value;
+      await axios.post(this.backend_url.concat('/client/login'), {
+        email: email,
+        password: password
+      }).then((response) => {
+        if (response.status === 200)
+          result[0] = true;
+        result[1] = response.data;
+      }).catch((error) => {
+        result[1] = error.message;
+      });
+      return result;
+    },
+    async logoutUser() {
+      let result = [false, ''];
+      await axios.put(this.backend_url.concat('/client/', this.session_token, '/logout')).then((response) => {
+        if (response.status === 200)
+          result[0] = true;
+        result[1] = response.data;
+      }).catch((error) => {
+        result[1] = error.message;
+      });
+      return result;
+    }
   },
   data() {
     return {
-      appView: false,
-      loginView: true,
-      fb: firebase,
-      logged: false,
-      backend_url: bu_local,
+      session_token: null,
+      backend_url: 'http://127.0.0.1:5000',
     }
-  },
-  async mounted() {
-    await this.isLoggedIn();
   },
 }
 </script>
