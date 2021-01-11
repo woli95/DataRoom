@@ -1,5 +1,5 @@
 <template>
-  <div id="main" class="container white" style="margin: 10px 10px 10px 10px;">
+  <div id="main" class="container white">
     <div class="row center-align">
       <b id="title">Y o u r ' s &nbsp; t o k e n s</b>
     </div>

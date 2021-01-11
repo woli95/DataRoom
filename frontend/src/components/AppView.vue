@@ -2,8 +2,11 @@
   <div class="row">
     <sideBar/>
     <div class="col s10">
-      <profileSettings v-if="this.profileSettingsView === true" class="col s5"/>
-      <tokenInfo v-if="this.tokenInfoView === true" class="col s5"/>
+      <profileSettings v-if="profileSettingsVisibility" class="col s5" style="margin: 10px 10px 10px 10px"/>
+      <tokenInfo v-if="tokenInfoViewVisibility" class="col s5" style="margin: 10px 10px 10px 10px"/>
+      <div class="row">
+        <dashboard v-if="dashboardVisibility" class="col s10" style="margin: 10px 10px 10px 10px"/>
+      </div>
     </div>
   </div>
 </template>
@@ -12,61 +15,37 @@
 import profileSettings from '@/components/profileSettings';
 import sideBar from '@/components/sideBar';
 import tokenInfo from '@/components/tokenInfo';
+import dashboard from '@/components/dashboard';
 
-import axios from 'axios';
-import M from 'materialize-css';
 
 export default {
   name: "AppView",
   components: {
+    dashboard,
     profileSettings,
     sideBar,
     tokenInfo,
   },
   methods: {
-    async logout() {
-      await axios.post(this.$root.$data.backend_url.concat('/client/', this.$root.$data.fb.auth().currentUser.uid.toString(), '/logout')).then(async (response) => {
-        if (response.data === 'OK') {
-          M.toast({ html: 'Tokens destroyed', classes: 'rounded blue', displayLength: 2000 });
-          await this.$root.$data.fb.auth().signOut().then(() => {
-            M.toast({ html: 'Signed out', classes: 'rounded blue', displayLength: 2000 });
-            this.$root.$data.logged = false;
-            this.$root.$data.LoginView = true;
-            this.$root.$data.AppView = false;
-          });
-        }
-      });
-    },
-    changeView(view) {
-      if(view === 'profileSettings') {
-        this.profileSettingsView = !this.profileSettingsView;
-      } else if(view === 'dashboard') {
-        this.dashboardView = !this.dashboardView;
-      } else if(view === 'tokenInfo') {
-        this.tokenInfoView = !this.tokenInfoView;
-      }
-    },
-    async getClientInfo() {
-      console.log("CALL");
-      await axios.get(this.$root.$data.backend_url.concat('/client/', this.$root.$data.fb.auth().currentUser.uid.toString(), '/info')).then((response) => {
-        this.currentClientInfo = response.data;
-      });
+    openView(what) {
+      if (what === 'tokenInfo')
+        this.tokenInfoViewVisibility = !this.tokenInfoViewVisibility;
+      else if (what === 'profileSettings')
+        this.profileSettingsVisibility = !this.profileSettingsVisibility;
+      else if (what === 'dashboard')
+        this.dashboardVisibility = !this.dashboardVisibility;
     }
   },
   data() {
     return {
-      profileSettingsView: false,
-      dashboardView: false,
-      tokenInfoView: false,
-      currentClientInfo: null
+      tokenInfoViewVisibility: false,
+      profileSettingsVisibility: false,
+      dashboardVisibility: false,
     }
   },
   computed: {
     console: () => console,
   },
-  async mounted() {
-    await this.getClientInfo();
-  }
 }
 </script>
 

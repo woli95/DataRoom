@@ -137,17 +137,19 @@ export default {
       document.getElementById('passwordForm').reset();
     },
     async submitForm(form) {
-      if (form === 'register')
-        await this.$root.registerUser().then((response) => {
+      if (form === 'register') {
+        let email = document.getElementById('registerEmail').value;
+        let password = document.getElementById('registerPassword').value;
+        await this.$root.registerUser(email, password).then((response) => {
           if (response[0] === true) {
-            M.toast({ html: 'Account has been created', classes: 'rounded green', displayLength: 2000 });
+            M.toast({html: 'Account has been created', classes: 'rounded green', displayLength: 2000});
             this.changeForm('toLogin');
             this.clearForms();
           } else {
-            M.toast({ html: response[1], classes: 'rounded orange', displayLength: 2000 });
+            M.toast({html: response[1], classes: 'rounded orange', displayLength: 2000});
           }
         });
-      else if (form === 'password')
+      } else if (form === 'password')
         await this.$root.sendPasswordResetEmail().then((response) => {
           if (response[0] === true) {
             M.toast({ html: 'Mail with password reset link has been sent', classes: 'rounded green', displayLength: 2000 });
@@ -158,7 +160,9 @@ export default {
           }
         });
       else if (form === 'login') {
-        await this.$root.loginUser().then((response) => {
+        let email = document.getElementById('loginEmail').value;
+        let password = document.getElementById('loginPassword').value;
+        await this.$root.loginUser(email, password).then((response) => {
           if (response[0] === true) {
             M.toast({ html: 'Your are logged in', classes: 'rounded green', displayLength: 2000 });
             this.clearForms();

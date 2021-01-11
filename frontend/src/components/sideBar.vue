@@ -5,11 +5,11 @@
         <i>Logged as</i><br>
       </div></li>
       <li><div class="divider"></div></li>
-      <li><button type="button" @click="this.$parent.changeView('dashBoard')" class="btn blue">DashBoard</button></li>
+      <li><button type="button" @click="this.$parent.openView('dashboard')" class="btn blue">DashBoard</button></li>
       <li><div class="divider"></div></li>
-      <li><button type="button" @click="this.$parent.changeView('tokenInfo')" class="btn blue">Show my tokens</button></li>
+      <li><button type="button" @click="this.$parent.openView('tokenInfo')" class="btn blue">Show my tokens</button></li>
       <li><div class="divider"></div></li>
-      <li><button type="button" @click="this.$parent.changeView('profileSettings')" class="btn blue">Profile Settings</button></li>
+      <li><button type="button" @click="this.$parent.openView('profileSettings')" class="btn blue">Profile Settings</button></li>
       <li><div class="divider"></div></li>
       <li><button type="button" @click="buttonClick('logout')" class="btn blue">Logout and exit app</button></li>
       <li><div class="divider"></div></li>
