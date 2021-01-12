@@ -43,6 +43,16 @@ def save_password_reset_token(token, email):
         return False
 
 
+def delete_password_reset_token(email):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM client_password_reset_token WHERE client_id=(SELECT id FROM client WHERE email='{}')".format(email))
+        connection.commit()
+        return True
+    except:
+        return False
+
 def verify_password_reset_token(email, token):
     try:
         connection = create_connection()

@@ -74,13 +74,15 @@ def client(session_token=None):
 @app.route('/mail/<email_address>/<token>', methods=['GET'])
 def mail(email_address=None, token=None):
     if request.path == '/mail/{}/send/link'.format(email_address):
+        loginQueries.delete_password_reset_token(email_address)
         result = send_auth_mail_to_reset_password(email_address)
         if result is False:
             return jsonify('Error while sending email'), 202
         else:
             if loginQueries.save_password_reset_token(result, email_address) is True:
                 return jsonify('Email sent'), 200
-        return jsonify('Other error'), 202
+            else:
+                return jsonify('Error while saving token')
     elif request.path == '/mail/{}/{}'.format(email_address, token):
         if loginQueries.verify_password_reset_token(email_address, token) is True:
             new_password = secrets.token_hex(5)

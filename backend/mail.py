@@ -9,7 +9,7 @@ def send_auth_mail_to_reset_password(client_email):
     to = str(client_email)
     subject = 'DataRoom Password Reset'
     token = secrets.token_hex(10)
-    body = 'Click on this link to restart your password http://127.0.0.1:5000/mail/{}/{}'.format(client_email, token)
+    body = 'Click on this link to restart your password https://dataroom-301309.ew.r.appspot.com/mail/{}/{}'.format(client_email, token)
     message = MIMEText(body)
 
     message = "From: {}\nTo: {}\nSubject: {}\n{}\n".format(gmail_user, to, subject, message)
