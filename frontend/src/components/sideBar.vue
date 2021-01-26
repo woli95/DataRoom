@@ -1,8 +1,8 @@
 <template>
-  <div class="col s2">
+  <div>
     <ul id="slide-out" class="side-nav fixed center-align">
       <li><div class="blue darken-2 white-text" style="border-radius: 20px; box-shadow: 2px 2px 2px 2px #468199">
-        <i>Logged as</i><br>
+        <i>Logged as</i><br><b>{{clientEmail}}</b>
       </div></li>
       <li><div class="divider"></div></li>
       <li><button type="button" @click="this.$parent.openView('dashboard')" class="btn blue">DashBoard</button></li>
@@ -22,6 +22,11 @@ import M from 'materialize-css';
 
 export default {
   name: 'sideBar',
+  data() {
+    return {
+      clientEmail: '',
+    }
+  },
   methods: {
     async buttonClick(button) {
       if (button === 'logout') {
@@ -35,6 +40,12 @@ export default {
         });
       }
     },
+  },
+  async beforeMount() {
+    await this.$root.getUserProfile().then((response) => {
+      if (response[0] === true)
+        this.clientEmail = response[1][0]["email"];
+    });
   }
 }
 </script>

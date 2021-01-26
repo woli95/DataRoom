@@ -1,5 +1,3 @@
-DROP TABLE client_password_reset_token;
-DROP TABLE client;
         ----------------------------------------------------
         -----------             MODEL            -----------
         ----------------------------------------------------
@@ -12,13 +10,13 @@ CREATE TABLE client(
     birth_date DATE,
     phone VARCHAR(9),
     created_date DATE,
-    password VARCHAR(20) NOT NULL,
+    password VARCHAR(50) NOT NULL,
     current_session_token VARCHAR(20)
 );
 CREATE TABLE client_password_reset_token (
     client_id INT UNIQUE,
     token VARCHAR(20) NOT NULL,
-    CONSTRAINT fk_password_reset_token_client
+    CONSTRAINT fk_client_password_reset_token_client
         FOREIGN KEY (client_id)
         REFERENCES client (id)
 );
@@ -52,7 +50,7 @@ AS $$
     WHERE client_id=(SELECT id FROM client WHERE email=$1)
 $$;
 
-CREATE OR REPLACE PROCEDURE create_client(EMAIL VARCHAR(50), PASSWORD VARCHAR(20))
+CREATE OR REPLACE PROCEDURE create_client(EMAIL VARCHAR(50), PASSWORD VARCHAR(50))
 LANGUAGE SQL
 AS $$
     INSERT INTO client (email, password, created_date) VALUES
@@ -73,7 +71,7 @@ AS $$
     END;
 $$;
 
-CREATE OR REPLACE FUNCTION verify_credentials(EMAIL VARCHAR(50), PASSWORD VARCHAR(20))
+CREATE OR REPLACE FUNCTION verify_credentials(EMAIL VARCHAR(50), PASSWORD VARCHAR(50))
 RETURNS INT
 LANGUAGE plpgsql
 AS $$
@@ -106,7 +104,7 @@ AS $$
     WHERE current_session_token=$2
 $$;
 
-CREATE OR REPLACE PROCEDURE update_client_password (PASSWORD VARCHAR(20), TOKEN VARCHAR(20))
+CREATE OR REPLACE PROCEDURE update_client_password (PASSWORD VARCHAR(50), TOKEN VARCHAR(20))
 LANGUAGE SQL
 AS $$
     UPDATE client
@@ -146,3 +144,59 @@ AS $$
                     WHERE current_session_token=$1;
     END;
 $$;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CREATE TABLE building (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    xml_document XML
+);
+
+CREATE TABLE building_client (
+    client_id INT,
+    building_id INT,
+    CONSTRAINT fk_building_client_client
+        FOREIGN KEY (client_id)
+        REFERENCES client(id),
+    CONSTRAINT fk_building_client_building
+        FOREIGN KEY (building_id)
+        REFERENCES building(id)
+);
+
+CREATE TABLE floor (
+    id SERIAL PRIMARY KEY,
+    building_id INT NOT NULL,
+    name VARCHAR(50) NOT NULL,
+    xml_document XML,
+    CONSTRAINT fk_floor_building
+        FOREIGN KEY (building_id)
+        REFERENCES building(id)
+);

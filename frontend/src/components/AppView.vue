@@ -1,13 +1,11 @@
 <template>
   <div class="row">
-    <sideBar/>
-    <div class="col s10">
-      <profileSettings v-if="profileSettingsVisibility" class="col s5" style="margin: 10px 10px 10px 10px"/>
-      <tokenInfo v-if="tokenInfoViewVisibility" class="col s5" style="margin: 10px 10px 10px 10px"/>
-      <div class="row">
-        <dashboard v-if="dashboardVisibility" class="col s10" style="margin: 10px 10px 10px 10px"/>
-      </div>
-    </div>
+    <sideBar class="col s2"/>
+  </div>
+  <div class="container center">
+    <profileSettings v-if="currentView === 'profileSettings'"/>
+    <tokenInfo v-if="currentView === 'tokenInfo'"/>
+    <dashboard v-if="currentView === 'dashboard'"/>
   </div>
 </template>
 
@@ -28,19 +26,15 @@ export default {
   },
   methods: {
     openView(what) {
-      if (what === 'tokenInfo')
-        this.tokenInfoViewVisibility = !this.tokenInfoViewVisibility;
-      else if (what === 'profileSettings')
-        this.profileSettingsVisibility = !this.profileSettingsVisibility;
-      else if (what === 'dashboard')
-        this.dashboardVisibility = !this.dashboardVisibility;
+      if (this.currentView === what)
+        this.currentView = '';
+      else
+        this.currentView = what;
     }
   },
   data() {
     return {
-      tokenInfoViewVisibility: false,
-      profileSettingsVisibility: false,
-      dashboardVisibility: false,
+      currentView: null,
     }
   },
   computed: {
