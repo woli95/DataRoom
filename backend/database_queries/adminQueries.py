@@ -140,18 +140,22 @@ def update_floor_xml_document(building_name, floor_name, xml_document):
     except:
         return False
 
-#todo:
-# def update_floor_in_building(building_name, floor_name, data):
-#     try:
-#         connection = create_connection()
-#         cursor = connection.cursor()
-#         cursor.execute("SELECT xml_document FROM floor WHERE name='{}';".format(floor_name))
-#         xml_document = cursor.fetchone()[0]
-#         xml_document = myXML.update_floor(xml_document, data)
-#         cursor.execute("UPDATE floor SET xml_document=XMLPARSE(DOCUMENT '{}') WHERE name='{}';".format(xml_document, floor_name))
-#         if data["floor_name"] != floor_name:
-#             cursor.execute("UPDATE floor SET name='{}' WHERE name='{}';".format(data["name"], floor_name))
-#         connection.commit()
-#         return True
-#     except:
-#         return False
+def get_building_data(building_name):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        cursor.execute("SELECT xml_document FROM building WHERE name='{}'".format(building_name))
+        return cursor.fetchone()[0]
+    except:
+        return False
+
+
+def update_building_xml_document(building_name, xml_document):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        cursor.execute("UPDATE building SET xml_document=XMLPARSE(DOCUMENT '{}') WHERE name='{}';".format(xml_document, building_name))
+        connection.commit()
+        return True
+    except:
+        return False

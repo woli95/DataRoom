@@ -57,6 +57,8 @@ def application(session_token, building_name=None, floor_name=None, room_name=No
 @app.route('/application/admin/<session_token>/building/<building_name>/user/add', methods=['POST'])
 @app.route('/application/admin/<session_token>/building/<building_name>/floor/<floor_name>/get/data', methods=['GET'])
 @app.route('/application/admin/<session_token>/building/<building_name>/floor/<floor_name>/update/xml', methods=['POST'])
+@app.route('/application/admin/<session_token>/building/<building_name>/get/data', methods=['GET'])
+@app.route('/application/admin/<session_token>/building/<building_name>/update/xml', methods=['POST'])
 def application_admin(session_token, building_name=None, floor_name=None, target_email=None):
     if request.path == '/application/admin/{}/building/{}/get/floors'.format(session_token, building_name):
         result = adminQueries.get_all_floors_for_building(building_name)
@@ -106,13 +108,25 @@ def application_admin(session_token, building_name=None, floor_name=None, target
             return jsonify(result), 200
         else:
             return jsonify('Failure while getting full floor data'), 202
-
     elif request.path == '/application/admin/{}/building/{}/floor/{}/update/xml'.format(session_token, building_name, floor_name):
         result = adminQueries.update_floor_xml_document(building_name, floor_name, json.loads(request.data)['xml_document'])
         if result is True:
             return jsonify('OK'), 200
         else:
             return jsonify('Cannot update xml document'), 202
+    elif request.path == '/application/admin/{}/building/{}/get/data'.format(session_token, building_name):
+        result = adminQueries.get_building_data(building_name)
+        if result is not False:
+            return jsonify(result), 200
+        else:
+            return jsonify('Fail while getting building data'), 202
+    elif request.path == '/application/admin/{}/building/{}/update/xml'.format(session_token, building_name):
+        result = adminQueries.update_building_xml_document(building_name, json.loads(request.data)['xml_document'])
+        if result is True:
+            return jsonify('OK'), 200
+        else:
+            return jsonify('Cannot update building data'), 202
+
 
 @app.route('/client/create', methods=['POST'])
 @app.route('/client/login', methods=['POST'])

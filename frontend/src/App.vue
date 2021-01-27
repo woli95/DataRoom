@@ -289,7 +289,33 @@ export default {
         result[1] = error.message;
       });
       return result;
-    }
+    },
+    async ADMIN_getBuildingXML(building_name) {
+      let result = [false, ''];
+      await axios.get(this.backend_url.concat('/application/admin/', this.session_token, '/building/', building_name, '/get/data')).then((response) => {
+        if (response.status === 200)
+          result[0] = true;
+        result[1] = response.data;
+      }).catch((error) => {
+        result[1] = error.message;
+      });
+      return result;
+},
+    async ADMIN_update_building_xml_document(building_name, xml_document) {
+      let result = [false, ''];
+      const serializer = new XMLSerializer();
+      const xmlStr = serializer.serializeToString(xml_document);
+      await axios.post(this.backend_url.concat('/application/admin/', this.session_token, '/building/', building_name, '/update/xml'), {
+        xml_document: xmlStr
+      }).then((response) => {
+        if (response.status === 200)
+          result[0] = true;
+        result[1] = response.data;
+      }).catch((error) => {
+        result[1] = error.message;
+      });
+      return result;
+    },
   },
   data() {
     return {

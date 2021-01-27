@@ -10,7 +10,7 @@
     </div>
     <div class="row" style="margin: 0 !important;">
       <button type="button" v-on:click="changeView('updateFloor')" class="btn blue darken-2 col s6">Update floor settings</button>
-      <button type="button" v-on:click="changeView('adminFloor')" class="btn blue lighten-2 col s6">Manage permissions</button>
+      <button type="button" v-on:click="changeView('adminBuilding')" class="btn blue lighten-2 col s6">Manage admin role</button>
     </div>
     <hr style="color:deepskyblue"/>
     <form v-if="activeView === 'addFloor'" action="javascript:void(0)" v-on:submit="addFloor" id="addFloor">
@@ -117,6 +117,24 @@
         </div>
       </div>
     </form>
+    <form v-if="activeView === 'adminBuilding'" action="javascript:void(0)" id="adminBuilding">
+      <div class="row">
+        <div class="col s6">
+          <select id="adminBuildingAdminsSelect" v-model="adminBuilding_data.selectedAdmin">
+            <option value="" disabled>Select admin</option>
+            <option v-for="(item, index) in adminBuilding_data.Admin_list" :key="index" :value="item">{{ item['email']}} - {{ item['first_name']}} {{ item['second_name'] }}</option>
+          </select>
+          <button type="button" v-on:click="removeAdmin" class="btn blue">Take back admin role form user</button>
+        </div>
+        <div class="col s6">
+          <select id="adminBuildingNoAdminsSelect" v-model="adminBuilding_data.selectedNoAdmin">
+            <option value="" disabled>Select user</option>
+            <option v-for="(item, index) in adminBuilding_data.noAdmin_list" :key="index" :value="item">{{item['email']}} - {{ item['first_name'] }} {{ item['second_name'] }}</option>
+          </select>
+          <button type="button" v-on:click="addAdmin" class="btn blue">Add admin role to user</button>
+        </div>
+      </div>
+    </form>
   </div>
 </template>
 
@@ -149,6 +167,14 @@ export default {
         selectedUser: '',
         level_administrator_list: null,
         nolevel_administrator_list: null,
+      },
+      adminBuilding_data: {
+        user_list: null,
+        xml_document: null,
+        noAdmin_list: null,
+        Admin_list: null,
+        selectedAdmin: '',
+        selectedNoAdmin: '',
       }
     }
   },
@@ -184,15 +210,49 @@ export default {
             if (response[0] === true)
               this.updateFloor_data.floor_list = response[1];
             else
-              M.toast({ html: response[1], classed: "rounded orange", displayLength: 2000 });
+              M.toast({ html: response[1], classes: "rounded orange", displayLength: 2000 });
           });
           await this.$root.ADMIN_getAllUsersForBuilding(this.buildingName).then((response) => {
             if (response[0] === true)
               this.updateFloor_data.user_list = response[1];
             else
-              M.toast({ html: response[1], classed: "rounded orange", displayLength: 2000 });
+              M.toast({ html: response[1], classes: "rounded orange", displayLength: 2000 });
           });
           M.FormSelect.init(document.getElementById('updateFloorSelect'));
+        }
+        else if (view === 'adminBuilding') {
+          await this.$root.ADMIN_getAllUsersForBuilding(this.buildingName).then((response) => {
+            if (response[0] === true)
+              this.adminBuilding_data.user_list = response[1];
+            else
+              M.toast({ html: response[1], classes: "rounded orange", displayLength: 2000 });
+          });
+          await this.$root.ADMIN_getBuildingXML(this.buildingName).then((response) => {
+            if (response[0] === true)
+              this.adminBuilding_data.xml_document = response[1];
+            else
+              M.toast({ html: response[1], classes: 'rounded orange', displayLength: 2000});
+          });
+          const parser = new DOMParser();
+          const xml_doc = parser.parseFromString(this.adminBuilding_data.xml_document, 'text/xml');
+          let admins = xml_doc.getElementsByTagName('admin');
+          let admins_id = []
+          for(let i = 0; i < admins.length ; i++)
+            admins_id.push(Number(admins[i].attributes[0].value));
+          this.adminBuilding_data.Admin_list = await _.filter(this.adminBuilding_data.user_list, (item) => {
+            for(let i = 0; i < admins_id.length; i++)
+              if (Number(item['id']) === Number(admins_id[i]))
+                return true;
+            return false;
+          });
+          this.adminBuilding_data.noAdmin_list = await _.filter(this.adminBuilding_data.user_list, (item) => {
+            for(let i = 0; i < admins_id.length; i++)
+              if (Number(item['id']) === Number(admins_id[i]))
+                return false;
+            return true;
+          });
+          await M.FormSelect.init(document.getElementById('adminBuildingAdminsSelect'));
+          await M.FormSelect.init(document.getElementById('adminBuildingNoAdminsSelect'));
         }
       }
     },
@@ -353,7 +413,48 @@ export default {
         });
       }
     },
-    ////
+    async addAdmin() {
+      if (this.adminBuilding_data.selectedNoAdmin === '')
+        M.toast({ html: 'You have to select user', classes:'rounded orange', displayLength: 2000 });
+      else {
+        const parser = new DOMParser();
+        let xml_document = parser.parseFromString(this.adminBuilding_data.xml_document, 'text/xml');
+        let new_node = xml_document.createElement('admin');
+        new_node.setAttribute('client_id', this.adminBuilding_data.selectedNoAdmin['id']);
+        xml_document.getElementsByTagName('admin')[0].appendChild(new_node);
+        await this.$root.ADMIN_update_building_xml_document(this.buildingName, xml_document).then(async (response) => {
+          if (response[0] === true) {
+            M.toast({html: 'Admin role has been added to user', classes: 'rounded green', displayLength: 2000});
+            await this.changeView('');
+            await this.changeView('adminBuilding');
+          } else
+            M.toast({html: response[1], classes: 'rounded orange', displayLength: 2000});
+        });
+      }
+    },
+    async removeAdmin() {
+      if (this.adminBuilding_data.selectedAdmin === '')
+        M.toast({ html: 'You have to select admin delete his role', classes:'rounded orange', displayLength: 2000 });
+      else {
+        const parser = new DOMParser();
+        let xml_document = parser.parseFromString(this.adminBuilding_data.xml_document, 'text/xml');
+        let elements = xml_document.getElementsByTagName('admin');
+        let i = 0;
+        for (; i < elements.length; i++) {
+          if (Number(elements[i].getAttribute('client_id')) === this.adminBuilding_data.selectedAdmin['id'])
+            break;
+        }
+        elements[i].parentNode.removeChild(elements[i]);
+        await this.$root.ADMIN_update_building_xml_document(this.buildingName, xml_document).then(async (response) => {
+          if (response[0] === true) {
+            M.toast({html: 'Admin role has been deleted', classes: 'rounded green', displayLength: 2000});
+            await this.changeView('');
+            await this.changeView('adminBuilding');
+          } else
+            M.toast({html: response[1], classes: 'rounded orange', displayLength: 2000});
+        });
+      }
+    }
   }
 }
 </script>
