@@ -29,9 +29,17 @@ def create_initial_floor_xml_document(client_id, default_permissions, floor_name
     return x
 
 
-def add_room(xml_document, room_name):
+def add_room(xml_document, room_name, public, hidden):
     root = ET.fromstring(xml_document)
     rooms = root.findall('rooms')[0]
-    ET.SubElement(rooms, 'room', room_name=room_name)
+    room = ET.SubElement(rooms, 'room', room_name=room_name, public=str(public), hidden=str(hidden))
+    tree = ET.ElementTree(root)
+    return ET.tostring(tree).decode('ascii')
+
+
+def delete_room(xml_document, room_name):
+    root = ET.fromstring(xml_document)
+    x = root.xpath("///room[@room_name=\'{}\']".format(room_name))[0]
+    x.getparent().remove(x)
     tree = ET.ElementTree(root)
     return ET.tostring(tree).decode('ascii')

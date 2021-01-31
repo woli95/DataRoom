@@ -1,52 +1,11 @@
-from main import app, storage_client
-from flask import request, jsonify
-from database_queries import basicQueries, applicationQueries, adminQueries
+from main import app
+from flask import request, jsonify, send_file
+import userQueries
+import basicQueries
+import adminQueries
 from mail import send_auth_mail_to_reset_password, send_mail_with_new_password
 import secrets
 import json
-
-
-@app.route('/application/<session_token>/create/building', methods=['POST'])
-@app.route('/application/<session_token>/building/getlist', methods=['GET'])
-@app.route('/application/<session_token>/building/<building_name>/get/floors', methods=['GET'])
-@app.route('/application/<session_token>/building/<building_name>/floor/<floor_name>/get/rooms', methods=['GET'])
-@app.route('/application/<session_token>/building/<building_name>/floor/<floor_name>/create/room', methods=['POST'])
-@app.route('/application/<session_token>/building/<building_name>/floor/<floor_name>/room/<room_name>/get/files', methods=['GET'])
-def application(session_token, building_name=None, floor_name=None, room_name=None):
-    if request.path == '/application/{}/create/building'.format(session_token):
-        if applicationQueries.create_building(json.loads(request.data), session_token) is True:
-            return jsonify('OK'), 200
-        else:
-            return jsonify('Cannot create bucket. Select different name'), 202
-    elif request.path == '/application/{}/building/getlist'.format(session_token):
-        result = applicationQueries.get_buildings_for_client(session_token)
-        if result is not False:
-            return jsonify(result), 200
-        else:
-            return jsonify('Failure while getting client buildings'), 202
-    elif request.path == '/application/{}/building/{}/get/floors'.format(session_token, building_name):
-        result = applicationQueries.get_floors_for_building_and_client(session_token, building_name)
-        if result is not False:
-            return jsonify(result), 200
-        else:
-            return jsonify('Cannot import floors for building'), 202
-    elif request.path == '/application/{}/building/{}/floor/{}/get/rooms'.format(session_token, building_name, floor_name):
-        result = applicationQueries.get_rooms_for_floor(session_token, floor_name, building_name)
-        if result is not False:
-            return jsonify(result), 200
-        else:
-            return jsonify('Fail while getting rooms for building'), 202
-    elif request.path == '/application/{}/building/{}/floor/{}/create/room'.format(session_token, building_name, floor_name):
-        if applicationQueries.create_room(session_token, building_name, floor_name, json.loads(request.data)["roomName"]) is True:
-            return jsonify('OK'), 200
-        else:
-            return jsonify('Cannot create room'), 202
-    elif request.path == '/application/{}/building/{}/floor/{}/room/{}/get/files'.format(session_token, building_name, floor_name, room_name):
-        result = applicationQueries.get_files_for_room(building_name, floor_name, room_name)
-        if result is not False:
-            return jsonify(result), 200
-        else:
-            return jsonify('Error while loading room files list'), 202
 
 
 @app.route('/application/admin/<session_token>/building/<building_name>/create/floor', methods=['POST'])
@@ -60,6 +19,8 @@ def application(session_token, building_name=None, floor_name=None, room_name=No
 @app.route('/application/admin/<session_token>/building/<building_name>/get/data', methods=['GET'])
 @app.route('/application/admin/<session_token>/building/<building_name>/update/xml', methods=['POST'])
 def application_admin(session_token, building_name=None, floor_name=None, target_email=None):
+    if adminQueries.admin_check_auth(session_token, building_name) is not True:
+        return jsonify('You have no permission to do this operation'), 202
     if request.path == '/application/admin/{}/building/{}/get/floors'.format(session_token, building_name):
         result = adminQueries.get_all_floors_for_building(building_name)
         if result is False:
@@ -126,6 +87,110 @@ def application_admin(session_token, building_name=None, floor_name=None, target
             return jsonify('OK'), 200
         else:
             return jsonify('Cannot update building data'), 202
+
+
+@app.route('/application/user/<session_token>/create/building', methods=['POST'])
+@app.route('/application/user/<session_token>/building/getlist', methods=['GET'])
+@app.route('/application/user/<session_token>/building/<building_name>/get/floors', methods=['GET'])
+@app.route('/application/user/<session_token>/building/<building_name>/floor/<floor_name>/get/rooms', methods=['GET'])
+@app.route('/application/user/<session_token>/building/<building_name>/floor/<floor_name>/room/<room_name>/get/files', methods=['GET'])
+@app.route('/application/user/<session_token>/building/<building_name>/floor/<floor_name>/room/<room_name>/upload/<file_name>', methods=['POST'])
+@app.route('/application/user/<session_token>/building/<building_name>/floor/<floor_name>/room/<room_name>/download/<file_name>', methods=['GET'])
+@app.route('/application/user/<session_token>/building/<building_name>/floor/<floor_name>/room/<room_name>/remove/<file_name>', methods=['PUT'])
+def application_user(session_token, building_name=None, floor_name=None, room_name=None, file_name=None):
+    if request.path == '/application/user/{}/create/building'.format(session_token):
+        if userQueries.create_building(json.loads(request.data), session_token) is True:
+            return jsonify('OK'), 200
+        else:
+            return jsonify('Cannot create bucket. Select different name'), 202
+    elif request.path == '/application/user/{}/building/getlist'.format(session_token):
+        result = userQueries.get_buildings_for_client(session_token)
+        if result is not False:
+            return jsonify(result), 200
+        else:
+            return jsonify('Failure while getting client buildings'), 202
+    elif request.path == '/application/user/{}/building/{}/get/floors'.format(session_token, building_name):
+        result = userQueries.get_floors_for_building_and_client(session_token, building_name)
+        if result is not False:
+            return jsonify(result), 200
+        else:
+            return jsonify('Cannot import floors for building'), 202
+    elif request.path == '/application/user/{}/building/{}/floor/{}/get/rooms'.format(session_token, building_name, floor_name):
+        result = userQueries.get_rooms_for_floor(session_token, floor_name, building_name)
+        if result is not False:
+            return jsonify(result), 200
+        else:
+            return jsonify('Fail while getting rooms for building'), 202
+    elif request.path == '/application/user/{}/building/{}/floor/{}/room/{}/get/files'.format(session_token, building_name, floor_name, room_name):
+        result = userQueries.get_files_for_room(building_name, floor_name, room_name)
+        if result is not False:
+            return jsonify(result), 200
+        else:
+            return jsonify('Error while loading room files list'), 202
+    elif request.path == '/application/user/{}/building/{}/floor/{}/room/{}/upload/{}'.format(session_token, building_name, floor_name, room_name, file_name):
+        result = userQueries.upload_file(building_name, floor_name, room_name, request, file_name)
+        if result is True:
+            return jsonify('OK'), 200
+        else:
+            return jsonify('Error while uploading file'), 202
+    elif request.path == '/application/user/{}/building/{}/floor/{}/room/{}/download/{}'.format(session_token, building_name, floor_name, room_name, file_name):
+        result = userQueries.download_file(building_name, floor_name, room_name, file_name)
+        if result is not False:
+            return send_file(file_name, as_attachment=True), 200
+        else:
+            return jsonify('Fail while downloading file'), 202
+    elif request.path == '/application/user/{}/building/{}/floor/{}/room/{}/remove/{}'.format(session_token, building_name, floor_name, room_name, file_name):
+        result = userQueries.remove_file(building_name, floor_name, room_name, file_name)
+        if result is True:
+            return jsonify('OK'), 200
+        else:
+            return jsonify('Cannot delete file'), 202
+
+
+@app.route('/application/leveladmin/<session_token>/building/<building_name>/floor/<floor_name>/room/<room_name>/delete', methods=['PUT'])
+@app.route('/application/leveladmin/<session_token>/building/<building_name>/floor/<floor_name>/create/room', methods=['POST'])
+@app.route('/application/leveladmin/<session_token>/building/<building_name>/floor/<floor_name>/get/data', methods=['GET'])
+@app.route('/application/leveladmin/<session_token>/building/<building_name>/floor/<floor_name>/update/xml', methods=['POST'])
+@app.route('/application/leveladmin/<session_token>/building/<building_name>/get/users', methods=['GET'])
+def application_leveladmin(session_token, building_name, floor_name=None, room_name=None):
+    if adminQueries.leveladmin_check_auth(session_token, building_name, floor_name) is True:
+        if request.path == '/application/leveladmin/{}/building/{}/get/users'.format(session_token, building_name):
+            i = 'ok'
+        elif request.path == '/application/leveladmin/{}/building/{}/floor/{}/create/room'.format(session_token, building_name, floor_name) and userQueries.check_floor_free_create_room_permission(building_name, floor_name) is True:
+            i = 'ok'
+        elif adminQueries.admin_check_auth(session_token, building_name, floor_name) is True:
+            i = 'ok'
+        else:
+            return jsonify('You have no permission to do this operation'), 202
+    if request.path == '/application/leveladmin/{}/building/{}/floor/{}/room/{}/delete'.format(session_token, building_name, floor_name, room_name):
+        result = adminQueries.delete_room(building_name, floor_name, room_name)
+        if result is True:
+            return jsonify('OK'), 200
+        else:
+            return jsonify('Cannot delete room'), 202
+    elif request.path == '/application/leveladmin/{}/building/{}/floor/{}/create/room'.format(session_token, building_name, floor_name):
+        if userQueries.create_room(session_token, building_name, floor_name, json.loads(request.data)) is True:
+            return jsonify('OK'), 200
+        else:
+            return jsonify('Cannot create room'), 202
+    elif request.path == '/application/leveladmin/{}/building/{}/floor/{}/get/data'.format(session_token, building_name, floor_name):
+        result = adminQueries.get_floor_full_data(building_name, floor_name)
+        if result is not False:
+            return jsonify(result), 200
+        else:
+            return jsonify('Cannot get floor data'), 202
+    elif request.path == '/application/leveladmin/{}/building/{}/floor/{}/update/xml'.format(session_token, building_name, floor_name):
+        result = adminQueries.update_floor_xml_document(building_name, floor_name, json.loads(request.data)['xml_document'])
+        if result is True:
+            return jsonify('OK'), 200
+        else:
+            return jsonify('Cannot update floor data'), 202
+    elif request.path == '/application/leveladmin/{}/building/{}/get/users'.format(session_token, building_name):
+        result = adminQueries.get_all_users_for_building(building_name)
+        if result is not False:
+            return jsonify(result), 200
+        else:
+            return jsonify('Cannot get building users'), 202
 
 
 @app.route('/client/create', methods=['POST'])
@@ -212,3 +277,10 @@ def mail(email_address=None, token=None):
                 return 'Db error'
         else:
             return 'Token error'
+
+
+@app.route('/callback/f/<fn>', methods=['PUT'])
+def other(fn):
+    import os
+    os.remove(fn)
+    return jsonify('OK'), 200

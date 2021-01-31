@@ -140,7 +140,7 @@ export default {
       if (form === 'register') {
         let email = document.getElementById('registerEmail').value;
         let password = document.getElementById('registerPassword').value;
-        await this.$root.registerUser(email, password).then((response) => {
+        await this.$root.AUTH_registerUser(email, password).then((response) => {
           if (response[0] === true) {
             M.toast({html: 'Account has been created', classes: 'rounded green', displayLength: 2000});
             this.changeForm('toLogin');
@@ -150,7 +150,7 @@ export default {
           }
         });
       } else if (form === 'password')
-        await this.$root.sendPasswordResetEmail().then((response) => {
+        await this.$root.AUTH_sendPasswordResetEmail().then((response) => {
           if (response[0] === true) {
             M.toast({ html: 'Mail with password reset link has been sent', classes: 'rounded green', displayLength: 2000 });
             this.changeForm('toLogin');
@@ -162,7 +162,7 @@ export default {
       else if (form === 'login') {
         let email = document.getElementById('loginEmail').value;
         let password = document.getElementById('loginPassword').value;
-        await this.$root.loginUser(email, password).then((response) => {
+        await this.$root.AUTH_loginUser(email, password).then((response) => {
           if (response[0] === true) {
             M.toast({ html: 'Your are logged in', classes: 'rounded green', displayLength: 2000 });
             this.clearForms();

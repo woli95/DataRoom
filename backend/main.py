@@ -6,7 +6,7 @@ import psycopg2
 
 app = Flask(__name__)
 CORS(app, resources={r'/*': {'origins': '*'}})
-storage_client = storage.Client.from_service_account_json('DataRoom-b5e20df0599f.json')
+storage_client = storage.Client.from_service_account_json('dataroom-301309-542f44bd1f24.json')
 import routes
 
 

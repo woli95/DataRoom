@@ -105,11 +105,11 @@ export default {
         if (newMail !== retypedMail)
           M.toast({ html: 'Emails do not match', classes: 'rounded orange', displayLength: 2000 });
         else {
-          await this.$root.changeUserEmail(newMail).then(async (response) => {
+          await this.$root.SETTINGS_changeUserEmail(newMail).then(async (response) => {
             if (response[0] === true) {
               document.getElementById('changeEmailForm').reset();
               M.toast({html: 'Email address has been changed', classes: 'rounded green', displayLength: 2000});
-              await this.$root.logoutUser().then((response) => {
+              await this.$root.AUTH_logoutUser().then((response) => {
                 if (response[0] === true) {
                   M.toast({ html: 'You have been logged out', classes: 'rounded green', displayLength: 2000 });
                   this.$root.session_token = null;
@@ -128,7 +128,7 @@ export default {
           M.toast({ html: 'Passwords do not match', classes: 'rounded orange', displayLength: 2000 });
         }
         else {
-          await this.$root.changeUserPassword(newPassword).then((response) => {
+          await this.$root.SETTINGS_changeUserPassword(newPassword).then((response) => {
             if (response[0] === true) {
               M.toast({ html: 'Password has been changed', classes: 'rounded green', displayLength: 2000 });
               document.getElementById('changePasswordForm').reset();
@@ -143,7 +143,7 @@ export default {
         const second_name = document.getElementById('profileSettingsSecondName').value;
         const phone_number = document.getElementById('profileSettingsPhoneNumber').value.toString();
         const birth_date = document.getElementById('profileSettingsBirthDate').value;
-        await this.$root.updateUserProfile(first_name, second_name, phone_number, birth_date).then((response) => {
+        await this.$root.SETTINGS_updateUserProfile(first_name, second_name, phone_number, birth_date).then((response) => {
           if (response[0] === true)
             M.toast({ html: 'Profile has been updated', classes: 'rounded green', displayLength: 2000 });
           else
@@ -153,7 +153,7 @@ export default {
     },
   },
   async beforeMount() {
-    await this.$root.getUserProfile().then((response) => {
+    await this.$root.USER_getUserProfile().then((response) => {
       if (response[0] === true) {
         document.getElementById('profileSettingsFirstName').value = response[1][0]["first_name"];
         document.getElementById('profileSettingsSecondName').value = response[1][0]["second_name"];

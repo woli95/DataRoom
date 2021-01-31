@@ -30,7 +30,7 @@ export default {
   methods: {
     async buttonClick(button) {
       if (button === 'logout') {
-        await this.$root.logoutUser().then((response) => {
+        await this.$root.AUTH_logoutUser().then((response) => {
           if (response[0] === true) {
             M.toast({ html: 'You have been logged out', classes: 'rounded green', displayLength: 2000 });
             this.$root.session_token = null;
@@ -42,7 +42,7 @@ export default {
     },
   },
   async beforeMount() {
-    await this.$root.getUserProfile().then((response) => {
+    await this.$root.USER_getUserProfile().then((response) => {
       if (response[0] === true)
         this.clientEmail = response[1][0]["email"];
     });

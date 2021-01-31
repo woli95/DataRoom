@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <div class="row"/>
     <div class="row" style="margin: 0 !important;">
       <button type="button" v-on:click="changeView('addUser')"  class="btn blue darken-2 col s6">Add user to building</button>
       <button type="button" v-on:click="changeView('removeUser')" class="btn blue lighten-2 col s6">Remove user from building</button>
@@ -12,6 +13,7 @@
       <button type="button" v-on:click="changeView('updateFloor')" class="btn blue darken-2 col s6">Update floor settings</button>
       <button type="button" v-on:click="changeView('adminBuilding')" class="btn blue lighten-2 col s6">Manage admin role</button>
     </div>
+    <div class="row"/>
     <hr style="color:deepskyblue"/>
     <form v-if="activeView === 'addFloor'" action="javascript:void(0)" v-on:submit="addFloor" id="addFloor">
       <div class="row input-field">
